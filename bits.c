@@ -19,7 +19,11 @@
  * Difficulty: 1
  */
 int bitAnd(int x, int y) {
-    return 2;
+    int not_x = ~x;
+    int not_y = ~y;
+    int x_and_y = ~(not_x | not_y);
+    int result = x_and_y;
+    return result;
 }
 
 /*
@@ -30,7 +34,11 @@ int bitAnd(int x, int y) {
  *   Difficulty: 1
  */
 int bitXor(int x, int y) {
-    return 2;
+    int not_x_and_y = ~(x & y);
+    int not_not_x_and_not_y = ~(~x & ~y);
+    int x_xor_y = not_x_and_y & not_not_x_and_not_y;
+    int result = x_xor_y;
+    return result;
 }
 
 /*
@@ -50,7 +58,21 @@ int bitXor(int x, int y) {
  *   1 if x and y have the same sign , 0 otherwise.
  */
 int samesign(int x, int y) {
-    return 2;
+    int sign_x = x >> 31;
+    int sign_y = y >> 31;
+    int is_same_sign = !(sign_x ^ sign_y);
+    if(!(x ^ 0))
+    {
+        if(y ^ 0)
+        is_same_sign = 0;
+    }
+    else
+    {
+        if(!(y ^ 0))
+        is_same_sign = 0;
+    }
+    int result = is_same_sign;
+    return result;
 }
 
 /*
@@ -63,7 +85,18 @@ int samesign(int x, int y) {
  *   Difficulty: 4
  */
 int logtwo(int v) {
-    return 2;
+    int result_1 = ((v >> 16) > 0) << 4;
+    v = v >> result_1;
+    int result_2 = ((v >> 8) > 0) << 3;
+    v = v >> result_2;
+    int result_3 = ((v >> 4) > 0) << 2;
+    v = v >> result_3;
+    int result_4 = ((v >> 2) > 0) << 1;
+    v = v >> result_4;
+    int result_5 = (v >> 1) > 0;
+    v = v >> (result_5);
+    int result = result_1 | result_2 | result_3 | result_4 | result_5;
+    return result;
 }
 
 /*
@@ -76,7 +109,20 @@ int logtwo(int v) {
  *    Difficulty: 2
  */
 int byteSwap(int x, int n, int m) {
-    return 2;
+    int move_n = (n << 3); 
+    int move_m = (m << 3);
+    int mask_n = 0xFF << move_n;
+    int mask_m = 0xFF << move_m;
+    int swap_n = mask_n & x;
+    int swap_m = mask_m & x;
+    x = x ^ swap_n;
+    x = x ^ swap_m;
+    swap_n = ((swap_n >> move_n) & 0xFF) << move_m;
+    swap_m = ((swap_m >> move_m) & 0xFF) << move_n;
+    x = x | swap_n;
+    x = x | swap_m;
+    int result = x;
+    return result;
 }
 
 /*
@@ -88,7 +134,15 @@ int byteSwap(int x, int n, int m) {
  *   Difficulty: 3
  */
 unsigned reverse(unsigned v) {
-    return 2;
+    unsigned result = 0;
+    unsigned i = 32;
+    while(i)
+    {
+        result = (result << 1) | (v & 0x1);
+        v = v >> 1;
+        i = i - 1;
+    }
+    return result;
 }
 
 /*
@@ -100,7 +154,11 @@ unsigned reverse(unsigned v) {
  *   Difficulty: 3
  */
 int logicalShift(int x, int n) {
-    return 2;
+    int mask = ~(((1 << 31) >> n) << 1);  //注意对于边界 n = 0 的判断和处理，避免出现位移 32 / -1 的情况
+    x = x >> n;
+    x = x & mask;
+    int result = x;
+    return result;
 }
 
 /*
