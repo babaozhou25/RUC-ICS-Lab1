@@ -170,7 +170,26 @@ int logicalShift(int x, int n) {
  *   Difficulty: 4
  */
 int leftBitCount(int x) {
-    return 2;
+    int judge = 0;
+    judge = !( ((x >> 16)& 0xFFFF) ^ 0xFFFF);
+    int result_1 = judge << 4;
+    x = x << result_1;
+    judge = !( ((x >> 24)& 0xFF) ^ 0xFF);
+    int result_2 = judge << 3;
+    x = x << result_2;
+    judge = !( ((x >> 28)& 0xF) ^ 0xF);
+    int result_3 = judge << 2;
+    x = x << result_3;
+    judge = !( ((x >> 30)& 0x3) ^ 0x3);
+    int result_4 = judge << 1;
+    x = x << result_4;
+    judge = (x >> 31) & 0x1;
+    int result_5 = judge;
+    x = x << result_5;
+    judge = (x >> 31) & 0x1;
+    int result_6 = judge;
+    int result = result_1 + result_2 + result_3 + result_4 + result_5 + result_6;
+    return result;
 }
 
 /*
