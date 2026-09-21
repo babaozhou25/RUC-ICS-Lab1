@@ -216,7 +216,27 @@ unsigned float_i2f(int x) {
  *   Difficulty: 4
  */
 unsigned floatScale2(unsigned uf) {
-    return 2;
+    unsigned sign = uf & (1 << 31);
+    unsigned exp = (uf >> 23) & 0xFF;
+    unsigned frac = uf & 0x7FFFFF;
+    unsigned result = uf;
+    if(exp == 0xFF) 
+    {
+        return result;
+    }
+    if(!exp)
+    {
+        result = sign + (frac << 1);
+        return result;
+    }
+    exp = exp + 1;
+    if(exp == 0xFF)
+    {
+        result = sign + 0x7F800000; // 浮点数向无穷溢出
+        return result;
+    }
+    result = sign + (exp << 23) + frac;
+    return result;
 }
 
 /*
@@ -233,6 +253,7 @@ unsigned floatScale2(unsigned uf) {
  *   Difficulty: 3
  */
 int float64_f2i(unsigned uf1, unsigned uf2) {
+    
     return 2;
 }
 
@@ -250,5 +271,19 @@ int float64_f2i(unsigned uf1, unsigned uf2) {
  *   Difficulty: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    unsigned result = 0;
+    if(x > 127) 
+    {
+        result = 0x7F800000; // +inf
+    }
+    else if(x >= -126)
+    {
+        unsigned exp = x + 127;
+        result = exp << 23;
+    }
+    else if(x >= -149)
+    {
+        result = 1 << (x + 149); // sign = 0, exp = 0x00, frac * 2^(-23) * 2^(-126) = x
+    }
+    return result;
 }
