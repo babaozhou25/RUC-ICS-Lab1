@@ -64,12 +64,16 @@ int samesign(int x, int y) {
     if(!(x ^ 0))
     {
         if(y ^ 0)
-        is_same_sign = 0;
+        {
+            is_same_sign = 0;
+        }
     }
     else
     {
         if(!(y ^ 0))
-        is_same_sign = 0;
+        {
+            is_same_sign = 0;
+        }
     }
     int result = is_same_sign;
     return result;
@@ -201,7 +205,60 @@ int leftBitCount(int x) {
  *   Difficulty: 4
  */
 unsigned float_i2f(int x) {
-    return 2;
+    unsigned result = 0;
+    if(x == 0)
+    {
+        result = 0;
+        //log_exp = 0, 右移找不到首个1
+    }
+    else if(x == 0x80000000)
+    {
+        result = 0xCF000000;
+        //absolute_value 超INT区间
+    }
+    else
+    {    
+        int sign = x & (1 << 31);
+        int absolute_value = x;
+        if(sign)
+        {
+            absolute_value = -x;
+        }
+        int log_exp = 31;
+        while(!(absolute_value >> log_exp))
+        {
+            log_exp = log_exp - 1;
+        }
+        int frac = 0;
+        if(log_exp <= 23)
+        {
+            frac = (absolute_value << (23 - log_exp)) & 0x7FFFFF;
+        }
+        else
+        {
+            int shift = log_exp - 24;
+            frac = (absolute_value >> (shift + 1)) & 0x7FFFFF;
+            int error_1 = (absolute_value >> (shift) & 0x1);
+            int mask_low = (1 << (shift)) - 1;
+            int error_2 = absolute_value & mask_low; //取出低位误差
+            if(error_1)
+            {
+                if(error_2 | (frac & 0x1)) // 四舍六入五成双：error_2 为 0 时判断奇偶性，非0时直接进位
+                {
+                    frac = frac + 1;
+                    if(frac >> 23)
+                    {
+                        //此时frac进位后变为0x800000
+                        frac = 0;
+                        log_exp = log_exp + 1;
+                        
+                    }
+                }
+            }
+        }
+        result = sign + ((log_exp + 127) << 23) + frac; 
+    }
+    return result;
 }
 
 /*
@@ -222,20 +279,24 @@ unsigned floatScale2(unsigned uf) {
     unsigned result = uf;
     if(exp == 0xFF) 
     {
-        return result;
+        result = uf;
     }
-    if(!exp)
+    else if(!exp)
     {
         result = sign + (frac << 1);
-        return result;
     }
-    exp = exp + 1;
-    if(exp == 0xFF)
-    {
-        result = sign + 0x7F800000; // 浮点数向无穷溢出
-        return result;
+    else
+    {    
+        exp = exp + 1;
+        if(exp == 0xFF)
+        {
+            result = sign + 0x7F800000; // 浮点数向无穷溢出
+        }
+        else
+        {
+            result = sign + (exp << 23) + frac;
+        }
     }
-    result = sign + (exp << 23) + frac;
     return result;
 }
 
@@ -253,8 +314,44 @@ unsigned floatScale2(unsigned uf) {
  *   Difficulty: 3
  */
 int float64_f2i(unsigned uf1, unsigned uf2) {
-    
-    return 2;
+    int sign = uf2 & (1 << 31);
+    int exp = (uf2 >> 20) & 0x7FF;
+    int result = 0;
+    if(exp >= 0x7FF) // 没有等于号
+    {
+        result = 0x80000000; // NaN / inf
+    }
+    else if(exp < 1023)
+    {
+        result = 0; //下溢 
+    }
+    else
+    {
+        int e = exp -1023;
+        if(e > 30) 
+        {
+            result = 0x80000000; // 溢出MAXINT
+        }
+        else
+        {        
+            int frac_high = uf2 & 0xFFFFF;
+            int high = frac_high + (1 << 20);
+            if(e > 20)
+            {
+                int low = uf1 >> (52 - e);
+                result = (high << (e - 20)) + low;
+            }
+            else
+            {
+                result = high >> (20 - e);
+            }
+            if(sign)
+            {
+                result = -result;
+            }
+        }
+    }
+    return result;
 }
 
 /*
